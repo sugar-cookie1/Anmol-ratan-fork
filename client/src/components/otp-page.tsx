@@ -1,6 +1,9 @@
-import { useState, useRef, useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
+import type { KeyboardEvent } from "react"
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
+import { verifyOtpCode, sendOtpToPhone } from "../helpers/firebase"
+import { loginWithIdToken } from "../api/api"
 
 interface OTPPageProps {
   phoneNumber: string
@@ -9,13 +12,19 @@ interface OTPPageProps {
 
 export default function OTPPage({ phoneNumber, onVerify }: OTPPageProps) {
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
-  const [timer, setTimer] = useState(30)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [timer, setTimer] = useState(120)
+
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   useEffect(() => {
+    inputRefs.current[0]?.focus()
+
     const interval = setInterval(() => {
       setTimer((prev) => (prev > 0 ? prev - 1 : 0))
     }, 1000)
+
     return () => clearInterval(interval)
   }, [])
 
@@ -31,27 +40,60 @@ export default function OTPPage({ phoneNumber, onVerify }: OTPPageProps) {
     }
   }
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+  const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus()
     }
   }
 
-  const handleVerify = () => {
-    if (otp.every((digit) => digit !== "")) {
-      onVerify()
+  const handleVerify = async () => {
+    if (!otp.every((digit) => digit !== "")) return
+
+    const code = otp.join("")
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      // 1. Verify OTP with Firebase (Client Side)
+      const { idToken } = await verifyOtpCode(code)
+
+      // 2. Authenticate with your Backend
+      const res = await loginWithIdToken(idToken)
+
+      if (res.ok) {
+        onVerify()
+      } else {
+        setError(res.message || "Login failed")
+      }
+    } catch (err: any) {
+      console.error("Failed to verify OTP", err)
+      setError(err.message || "Invalid OTP or error.")
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleResend = () => {
-    setTimer(30)
-    setOtp(["", "", "", "", "", ""])
+  const handleResend = async () => {
+    try {
+      setTimer(30)
+      setOtp(["", "", "", "", "", ""])
+      setError(null)
+
+      // Resend using Firebase
+      await sendOtpToPhone(phoneNumber)
+
+      // optionally focus first input again
+      inputRefs.current[0]?.focus()
+    } catch (err) {
+      console.error("Failed to resend OTP", err)
+      setError("Could not resend OTP. Try again.")
+    }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-cream-50 flex flex-col items-center justify-center px-8">
       <div className="w-full max-w-sm space-y-8">
-        {/* Header */}
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
             <span className="text-white text-xl">🔑</span>
@@ -60,12 +102,13 @@ export default function OTPPage({ phoneNumber, onVerify }: OTPPageProps) {
           <p className="text-orange-600">Enter the OTP sent to {phoneNumber}</p>
         </div>
 
-        {/* OTP Input */}
         <div className="flex justify-center space-x-3">
           {otp.map((digit, index) => (
             <Input
               key={index}
-              ref={(el) => { inputRefs.current[index] = el}}
+              ref={(el: HTMLInputElement | null) => {
+                inputRefs.current[index] = el
+              }}
               type="text"
               inputMode="numeric"
               maxLength={1}
@@ -77,16 +120,16 @@ export default function OTPPage({ phoneNumber, onVerify }: OTPPageProps) {
           ))}
         </div>
 
-        {/* Verify Button */}
+        {error && <p className="text-center text-sm text-red-600">{error}</p>}
+
         <Button
           onClick={handleVerify}
           className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-2xl shadow-lg"
-          disabled={!otp.every((digit) => digit !== "")}
+          disabled={!otp.every((digit) => digit !== "") || loading}
         >
-          Verify OTP
+          {loading ? "Verifying..." : "Verify OTP"}
         </Button>
 
-        {/* Resend Timer */}
         <div className="text-center">
           {timer > 0 ? (
             <p className="text-orange-600">

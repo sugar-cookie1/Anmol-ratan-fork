@@ -1,29 +1,53 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Phone } from "lucide-react"
-
-// FIXED relative imports — adjust if your UI folder path is different
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
+import { initRecaptcha, sendOtpToPhone } from "../helpers/firebase"
 
 interface LoginPageProps {
-  onLogin: (phone: string, guest?: boolean) => void
+  onLogin: (phone: string) => void
 }
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
   const [phoneNumber, setPhoneNumber] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleContinue = () => {
-    if (phoneNumber.trim()) {
-      onLogin(phoneNumber)
+  useEffect(() => {
+    // Initialize reCAPTCHA on mount
+    initRecaptcha("recaptcha-container")
+  }, [])
+
+  const handleContinue = async () => {
+    const trimmed = phoneNumber.trim()
+    if (!trimmed) return
+
+    try {
+      setLoading(true)
+      setError(null) // clear previous errors
+
+      // Format phone number: default to +91 if no country code provided
+      let formattedPhone = trimmed
+      if (!formattedPhone.startsWith("+")) {
+        formattedPhone = `+91${formattedPhone}`
+      }
+
+      // 2) Send OTP via Firebase (no backend)
+      await sendOtpToPhone(formattedPhone)
+
+      // 3) Go to OTP page
+      onLogin(formattedPhone)
+    } catch (err) {
+      console.error("Failed to send OTP via Firebase:", err)
+      setError("Failed to send OTP. Please try again.")  // ✅ FIX ADDED
+    } finally {
+      setLoading(false)
     }
-  }
-
-  const handleGuestLogin = () => {
-    onLogin("", true)
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-100 to-cream-50 relative overflow-hidden">
+
       {/* Background image */}
       <div className="absolute inset-0 opacity-10">
         <img
@@ -38,6 +62,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
       <div className="absolute bottom-40 right-8 w-16 h-16 bg-orange-300 rounded-full opacity-15"></div>
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-8">
+
         {/* Logo */}
         <div className="text-center mb-16">
           <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg">
@@ -49,6 +74,18 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
         {/* Login Form */}
         <div className="w-full max-w-sm space-y-6">
+
+          {/* Recaptcha container */}
+          <div
+            id="recaptcha-container"
+            className="mb-4 min-h-[78px] min-w-[304px] border-2 border-solid border-orange-200"
+          />
+
+          {/* Error message */}
+          {error && (
+            <p className="text-red-600 text-sm text-center mb-2">{error}</p>
+          )}
+
           <div className="space-y-4">
             <div className="relative">
               <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500 w-5 h-5" />
@@ -64,19 +101,10 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             <Button
               onClick={handleContinue}
               className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-2xl shadow-lg"
-              disabled={!phoneNumber.trim()}
+              disabled={!phoneNumber.trim() || loading}
             >
-              Continue
+              {loading ? "Sending OTP..." : "Continue"}
             </Button>
-          </div>
-
-          <div className="text-center">
-            <button
-              onClick={handleGuestLogin}
-              className="text-orange-600 hover:text-orange-700 font-medium underline underline-offset-4"
-            >
-              Enter as Guest
-            </button>
           </div>
 
           <p className="text-sm text-orange-600 text-center opacity-80">

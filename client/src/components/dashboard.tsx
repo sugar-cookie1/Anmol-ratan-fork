@@ -25,7 +25,7 @@ export default function Dashboard({ phoneNumber, isGuest, userDetails, onLogout 
   return (
     <div className="min-h-screen bg-orange-50 flex flex-col">
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto pb-20">
         {activeTab === "bhajans" && <BhajansTab />}
         {activeTab === "recordings" && <RecordingsTab />}
         {activeTab === "profile" && (
@@ -39,7 +39,7 @@ export default function Dashboard({ phoneNumber, isGuest, userDetails, onLogout 
       </div>
 
       {/* Bottom Navigation */}
-      <div className="bg-white border-t border-orange-100 px-4 py-2 safe-area-pb">
+      <div className="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-orange-100 px-4 py-2 safe-area-pb shadow-lg">
         <div className="flex justify-around">
           {tabs.map((tab) => {
             const Icon = tab.icon
@@ -48,9 +48,8 @@ export default function Dashboard({ phoneNumber, isGuest, userDetails, onLogout 
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all ${
-                  isActive ? "text-orange-600 bg-orange-50" : "text-gray-500 hover:text-orange-500"
-                }`}
+                className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all ${isActive ? "text-orange-600 bg-orange-50" : "text-gray-500 hover:text-orange-500"
+                  }`}
               >
                 <Icon className={`w-6 h-6 mb-1 ${isActive ? "text-orange-600" : ""}`} />
                 <span className="text-xs font-medium">{tab.label}</span>

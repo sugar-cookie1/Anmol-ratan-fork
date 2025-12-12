@@ -45,3 +45,6 @@ next-env.d.ts
 
 # ==== MISC ====
 tmp/
+
+#==== CONFIG FILES ====
+server/config/serviceAccountKey.json

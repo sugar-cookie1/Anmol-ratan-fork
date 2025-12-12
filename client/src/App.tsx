@@ -1,87 +1,106 @@
+// src/App.tsx
 import { useState } from "react";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
+
 import LoginPage from "./components/login-page";
 import OTPPage from "./components/otp-page";
 import UserDetailsPage from "./components/user-details-page";
 import Dashboard from "./components/dashboard";
 
-export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<
-    "login" | "otp" | "details" | "dashboard"
-  >("login");
+type UserDetails = {
+  firstName: string;
+  lastName: string;
+  place: string;
+} | null;
 
+function AppRoutes() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isGuest, setIsGuest] = useState(false);
-  const [userDetails, setUserDetails] = useState<{
-    firstName: string;
-    lastName: string;
-    place: string;
-  } | null>(null);
+  const [userDetails, setUserDetails] = useState<UserDetails>(null);
 
-  // LOGIN SUCCESS (phone OR guest)
+  const navigate = useNavigate();
+
   const handleLogin = (phone: string, guest?: boolean) => {
     if (guest) {
       setIsGuest(true);
       setPhoneNumber("");
-      setCurrentScreen("dashboard");
+      navigate("/dashboard");
       return;
     }
 
     setIsGuest(false);
     setPhoneNumber(phone);
-    setCurrentScreen("otp");
+    navigate("/otp");
   };
 
-  // OTP VERIFIED
   const handleVerifyOtp = () => {
-    setCurrentScreen("details");
+    navigate("/details");
   };
 
-  // USER DETAILS COMPLETED
   const handleCompleteDetails = (details: {
     firstName: string;
     lastName: string;
     place: string;
   }) => {
     setUserDetails(details);
-    setCurrentScreen("dashboard");
+    navigate("/dashboard");
   };
 
-  // LOGOUT
   const handleLogout = () => {
     setPhoneNumber("");
     setUserDetails(null);
     setIsGuest(false);
-    setCurrentScreen("login");
+    navigate("/login");
   };
 
-  // RENDER SCREENS
-  if (currentScreen === "login") {
-    return <LoginPage onLogin={handleLogin} />;
-  }
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
-  if (currentScreen === "otp") {
-    return <OTPPage phoneNumber={phoneNumber} onVerify={handleVerifyOtp} />;
-  }
+      <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
 
-  if (currentScreen === "details") {
-    return (
-      <UserDetailsPage
-        phoneNumber={phoneNumber}
-        onComplete={handleCompleteDetails}
+      <Route
+        path="/otp"
+        element={
+          <OTPPage phoneNumber={phoneNumber} onVerify={handleVerifyOtp} />
+        }
       />
-    );
-  }
 
-  if (currentScreen === "dashboard") {
-    return (
-      <Dashboard
-        phoneNumber={phoneNumber}
-        isGuest={isGuest}
-        userDetails={userDetails || undefined}
-        onLogout={handleLogout}
+      <Route
+        path="/details"
+        element={
+          <UserDetailsPage
+            phoneNumber={phoneNumber}
+            onComplete={handleCompleteDetails}
+          />
+        }
       />
-    );
-  }
 
-  return null;
+      <Route
+        path="/dashboard"
+        element={
+          <Dashboard
+            phoneNumber={phoneNumber}
+            isGuest={isGuest}
+            userDetails={userDetails || undefined}
+            onLogout={handleLogout}
+          />
+        }
+      />
+
+      {/* fallback */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+}
+
+export default function App() {
+  return (
+      <AppRoutes />
+  );
 }
