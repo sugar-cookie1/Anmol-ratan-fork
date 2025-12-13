@@ -68,7 +68,7 @@ export default function OTPPage({ phoneNumber, onVerify }: OTPPageProps) {
       }
     } catch (err: any) {
       console.error("Failed to verify OTP", err)
-      setError(err.message || "Invalid OTP or error.")
+      setError("Wrong OTP");
     } finally {
       setLoading(false)
     }

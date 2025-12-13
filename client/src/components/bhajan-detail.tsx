@@ -1,43 +1,15 @@
 import { Button } from "../components/ui/button"
 import { ArrowLeft, Play, Heart, Share, Download } from "lucide-react"
 
+import type { Bhajan } from "../api/api"
+
 interface BhajanDetailProps {
-  bhajanId: string
+  bhajan: Bhajan
   onBack: () => void
 }
 
-export default function BhajanDetail({ bhajanId, onBack }: BhajanDetailProps) {
-  // Mock data for now
-  const bhajanData = {
-    bhajan1: {
-      title: "दाता तेरे प्यार ने रोग ऐसा ला लिया",
-      category: "Nachne vale",
-      lyrics: `दाता तेरे प्यार ने रोग ऐसा ला लिया
-वाह रे दाताजी तूने पागल बना दिया
-पहली बारी आई थी मैं दाताजी दे बेड़े विच
-दूजी बारी आई थी मैं दाताजी दे गेडे विच
-तीजी बारी दाताजी ने जाल बिछा दिया
-वाह रे दाताजी तूने पागल बना दिया
-`,
-    },
-    bhajan2: {
-      title: "सोनी सी डगोरी वालिया दिल तेरे तो बगैर नईयो लगदा",
-      category: "Bhajan",
-      lyrics: `सोनी सी डगोरी वालिया दिल तेरे तो बगैर नईयो लगदा
-प्यारे प्यारे प्यारे दातिया दिल तेरे तो बगैर नईयो लगदा
-`,
-    },
-    bhajan3: {
-      title: "ओ गरीब नवाज मेरी बांह फड़ ले",
-      category: "Medium Paced Bhajan",
-      lyrics: `ओ गरीब नवाज मेरी बांह फड़ ले,
-मैनू पार करन दी वे हामी भर ले
-`,
-    },
-  }
+export default function BhajanDetail({ bhajan, onBack }: BhajanDetailProps) {
 
-  const bhajan =
-    bhajanData[bhajanId as keyof typeof bhajanData] || bhajanData.bhajan1
 
   return (
     <div className="min-h-screen bg-orange-50">

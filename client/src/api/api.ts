@@ -76,3 +76,21 @@ export async function loginWithIdToken(
     return { ok: false, message: "Server error: Invalid response" };
   }
 }
+
+export interface Bhajan {
+  _id: string;
+  title: string;
+  lyrics: string;
+  category: string;
+  createdAt: string;
+}
+
+export async function getBhajans(): Promise<{ ok: boolean; data: Bhajan[] }> {
+  try {
+    const res = await fetch(`${API}/bhajans`);
+    return await res.json();
+  } catch (err) {
+    console.error("getBhajans error:", err);
+    return { ok: false, data: [] };
+  }
+}

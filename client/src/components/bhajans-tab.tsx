@@ -1,75 +1,65 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "../components/ui/input"
-import { Button } from "../components/ui/button"
-import { Search, Filter, Heart, List, Music2, Sparkles } from "lucide-react"
+import { Search, Music2 } from "lucide-react"
 import BhajanDetail from "./bhajan-detail"
+import { getBhajans, type Bhajan } from "../api/api"
 
-export default function BhajansTab() {
+interface BhajansTabProps {
+  userName?: string
+}
+
+export default function BhajansTab({ userName }: BhajansTabProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedBhajan, setSelectedBhajan] = useState<string | null>(null)
+  const [selectedBhajan, setSelectedBhajan] = useState<Bhajan | null>(null)
+  const [bhajans, setBhajans] = useState<Bhajan[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function loadBhajans() {
+      setLoading(true)
+      const res = await getBhajans()
+      if (res.ok) {
+        setBhajans(res.data)
+      }
+      setLoading(false)
+    }
+    loadBhajans()
+  }, [])
 
   const categories = [
     {
       title: "आरती",
       subtitle: "Aarti",
       gradient: "from-orange-400 to-red-500",
+      filterValue: "Aarti"
     },
     {
       title: "जिंदाराम",
       subtitle: "Jindaram",
       gradient: "from-yellow-400 to-orange-500",
+      filterValue: "Jindaram" // Assuming this matches DB value
     },
   ]
 
-  const tags = [
-    { label: "Favorites", icon: Heart },
-    { label: "Playlists", icon: List },
-    { label: "Nachne Vale", icon: Music2 },
-    { label: "Vireh", icon: Sparkles },
-    { label: "Amritvevle", icon: Sparkles },
-  ]
-
-  const bhajans = [
-    {
-      title: "दाता तेरे प्यार ने रोग ऐसा ला लिया",
-      preview: "दाता तेरे प्यार ने रोग ऐसा ला लिया, ",
-      category: "Aarti",
-    },
-    {
-      title: "सोनी सी डगोरी वालिया ",
-      preview: "सोनी सी डगोरी वालिया दिल तेरे तो बगैर नईयो लगदा",
-      category: "Bhajan",
-    },
-    {
-      title: "ओ गरीब नवाज ",
-      preview: "ओ गरीब नवाज मेरी बांह फड़ ले",
-      category: "Aarti",
-    },
-    {
-      title: "राधे राधे गोविंद",
-      preview: "Radhe radhe govind, govind radhe radhe...",
-      category: "Bhajan",
-    },
-    {
-      title: "शिव शंकर भोले",
-      preview: "Shiv shankar bhole, bhole shiv shankar...",
-      category: "Bhajan",
-    },
-    {
-      title: "गुरु ब्रह्मा गुरु विष्णु",
-      preview: "Guru brahma guru vishnu, guru devo maheshwara...",
-      category: "Guru Bhajan",
-    },
-  ]
-
-  const handleBhajanClick = (index: number) => {
-    setSelectedBhajan(`bhajan${index + 1}`)
+  const handleBhajanClick = (bhajan: Bhajan) => {
+    setSelectedBhajan(bhajan)
   }
+
+  // Filter Logic
+  const filteredBhajans = bhajans.filter((b) => {
+    const matchesCategory = selectedCategory ? b.category.toLowerCase().includes(selectedCategory.toLowerCase()) : true
+    const matchesSearch = searchQuery
+      ? b.title.toLowerCase().includes(searchQuery.toLowerCase()) || b.lyrics.toLowerCase().includes(searchQuery.toLowerCase())
+      : true
+    return matchesCategory && matchesSearch
+  })
 
   if (selectedBhajan) {
     return (
       <BhajanDetail
-        bhajanId={selectedBhajan}
+        bhajan={selectedBhajan}
         onBack={() => setSelectedBhajan(null)}
       />
     )
@@ -91,7 +81,7 @@ export default function BhajansTab() {
             धन धन सतगुरु तेरा ही आसरा
           </h1>
           <p className="text-center text-orange-100 text-lg font-medium">
-            Naman!
+            {userName || "Sangat Ji"}!
           </p>
         </div>
       </div>
@@ -108,82 +98,71 @@ export default function BhajansTab() {
               className="pl-12 h-12 bg-white rounded-2xl border-orange-200 focus:border-orange-400"
             />
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-12 w-12 rounded-2xl border-orange-200 hover:bg-orange-50 bg-transparent"
-          >
-            <Filter className="w-5 h-5 text-orange-600" />
-          </Button>
         </div>
 
         {/* Category Cards */}
         <div className="grid grid-cols-2 gap-4 mb-6">
-          {categories.map((category, index) => (
-            <div
-              key={index}
-              className={`h-16 rounded-2xl bg-gradient-to-r ${category.gradient} p-4 flex items-center justify-center shadow-lg`}
-            >
-              <div className="text-center">
-                <h3
-                  className="text-white font-bold text-lg"
-                  style={{ fontFamily: "serif" }}
-                >
-                  {category.title}
-                </h3>
-                <p className="text-white/80 text-sm">{category.subtitle}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Tag Pills */}
-        <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
-          {tags.map((tag, index) => {
-            const Icon = tag.icon
+          {categories.map((category, index) => {
+            const isSelected = selectedCategory === category.filterValue;
             return (
-              <Button
+              <div
                 key={index}
-                variant="outline"
-                className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 whitespace-nowrap bg-transparent"
+                onClick={() => setSelectedCategory(isSelected ? null : category.filterValue)}
+                className={`h-16 rounded-2xl bg-gradient-to-r ${category.gradient} p-4 flex items-center justify-center shadow-lg cursor-pointer transition-all ${isSelected ? 'ring-4 ring-offset-2 ring-orange-500 scale-105' : 'opacity-90 hover:opacity-100'}`}
               >
-                <Icon className="w-4 h-4 text-orange-600" />
-                <span className="text-sm font-medium text-orange-700">
-                  {tag.label}
-                </span>
-              </Button>
+                <div className="text-center">
+                  <h3
+                    className="text-white font-bold text-lg"
+                    style={{ fontFamily: "serif" }}
+                  >
+                    {category.title}
+                  </h3>
+                  <p className="text-white/80 text-sm">{category.subtitle}</p>
+                </div>
+              </div>
             )
           })}
         </div>
 
         {/* Bhajan Grid */}
-        <div className="grid grid-cols-2 gap-4 pb-6">
-          {bhajans.map((bhajan, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-2xl p-4 shadow-sm border border-orange-100 hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => handleBhajanClick(index)}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
-                  <Music2 className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-xs text-orange-600 font-medium">
-                  {bhajan.category}
-                </span>
-              </div>
-              <h3
-                className="font-bold text-gray-800 mb-1 text-sm"
-                style={{ fontFamily: "serif" }}
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 pb-6">
+            {filteredBhajans.map((bhajan, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-2xl p-4 shadow-sm border border-orange-100 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => handleBhajanClick(bhajan)}
               >
-                {bhajan.title}
-              </h3>
-              <p className="text-xs text-gray-600 line-clamp-2">
-                {bhajan.preview}
-              </p>
-            </div>
-          ))}
-        </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
+                    <Music2 className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-xs text-orange-600 font-medium">
+                    {bhajan.category}
+                  </span>
+                </div>
+                <h3
+                  className="font-bold text-gray-800 mb-1 text-sm"
+                  style={{ fontFamily: "serif" }}
+                >
+                  {bhajan.title}
+                </h3>
+                <p className="text-xs text-gray-600 line-clamp-2">
+                  {bhajan.lyrics.substring(0, 60)}...
+                </p>
+              </div>
+            ))}
+            {filteredBhajans.length === 0 && (
+              <div className="col-span-2 text-center py-10 text-gray-500">
+                No bhajans found found.
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

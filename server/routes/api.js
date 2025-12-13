@@ -1,6 +1,7 @@
 // server/routes/api.js
 import { Router } from "express";
 import { User } from "#models/user.js";
+import { Bhajan } from "../models/bhajan.js";
 import {
   loginWithIdToken,
   verifyFirebaseIdToken,
@@ -9,6 +10,45 @@ import {
 import { addWhitelistedUser } from "../services/userService.js";
 
 const router = Router();
+
+// ---------------- PUBLIC: LIST BHAJANS ----------------
+router.get("/bhajans", async (req, res) => {
+  try {
+    // Sort by newest first
+    const bhajans = await Bhajan.find().sort({ createdAt: -1 });
+    return res.json({ ok: true, data: bhajans });
+  } catch (err) {
+    console.error("GET /bhajans error:", err);
+    return res.status(500).json({ ok: false, message: "Server error" });
+  }
+});
+
+// ---------------- ADMIN: ADD BHAJAN ----------------
+router.post("/admin/bhajans", async (req, res) => {
+  try {
+    const receivedHeader = req.headers["x-admin-secret"];
+    if (!process.env.ADMIN_SECRET || receivedHeader !== process.env.ADMIN_SECRET) {
+      return res.status(403).json({ ok: false, message: "Unauthorized" });
+    }
+
+    const { title, lyrics, category } = req.body;
+    if (!title || !lyrics) {
+      return res.status(400).json({ ok: false, message: "Title and lyrics are required" });
+    }
+
+    const newBhajan = new Bhajan({
+      title,
+      lyrics,
+      category: category || "General",
+    });
+
+    await newBhajan.save();
+    return res.json({ ok: true, message: "Bhajan added successfully", data: newBhajan });
+  } catch (err) {
+    console.error("POST /admin/bhajans error:", err);
+    return res.status(500).json({ ok: false, message: "Server error" });
+  }
+});
 
 // ---------------- AUTH: LOGIN WITH FIREBASE ID TOKEN ----------------
 // Client verifies OTP with Firebase and sends ONLY the Firebase ID token here.
