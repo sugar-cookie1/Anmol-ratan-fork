@@ -75,11 +75,8 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         {/* Login Form */}
         <div className="w-full max-w-sm space-y-6">
 
-          {/* Recaptcha container */}
-          <div
-            id="recaptcha-container"
-            className="mb-4 min-h-[78px] min-w-[304px] border-2 border-solid border-orange-200"
-          />
+          {/* Recaptcha container (invisible) */}
+          <div id="recaptcha-container" />
 
           {/* Error message */}
           {error && (

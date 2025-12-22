@@ -1,12 +1,12 @@
 import { Switch } from "../components/ui/switch"
-import { 
-  User, Phone, Download, Bell, Moon, LogOut, ChevronRight, Settings, MapPin 
+import {
+  User, Phone, Download, Bell, Moon, LogOut, ChevronRight, Settings
 } from "lucide-react"
 
 interface ProfileTabProps {
   phoneNumber: string
   isGuest: boolean
-  userDetails?: { firstName: string; lastName: string; place: string }
+  userDetails?: { name: string }
   onLogout: () => void
 }
 
@@ -25,24 +25,13 @@ export default function ProfileTab({ phoneNumber, isGuest, userDetails, onLogout
             </div>
             <div className="flex-1">
               <h2 className="text-lg font-semibold text-gray-800">
-                {isGuest
-                  ? "Guest User"
-                  : userDetails
-                  ? `${userDetails.firstName} ${userDetails.lastName}`
-                  : "Devotee"}
+                {isGuest ? "Guest User" : (userDetails?.name || "Devotee")}
               </h2>
 
               <div className="flex items-center gap-2 text-gray-600 mb-1">
                 <Phone className="w-4 h-4" />
                 <span className="text-sm">{isGuest ? "Not logged in" : phoneNumber}</span>
               </div>
-
-              {userDetails?.place && (
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="w-4 h-4" />
-                  <span className="text-sm">{userDetails.place}</span>
-                </div>
-              )}
             </div>
           </div>
         </div>

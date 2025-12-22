@@ -145,4 +145,27 @@ router.post("/admin/users", async (req, res) => {
 });
 
 
+// ---------------- ADMIN: VERIFY PASSWORD ----------------
+router.post("/admin/verify", (req, res) => {
+  try {
+    const { password } = req.body;
+
+    // Ensure ADMIN_SECRET exists in env
+    if (!process.env.ADMIN_SECRET) {
+      console.error("[admin/verify] MISSING process.env.ADMIN_SECRET");
+      return res.status(500).json({ ok: false, message: "Server misconfigured" });
+    }
+
+    if (!password || password !== process.env.ADMIN_SECRET) {
+      return res.status(403).json({ ok: false, message: "Invalid password" });
+    }
+
+    return res.json({ ok: true, message: "Verified" });
+  } catch (err) {
+    console.error("/admin/verify error:", err);
+    return res.status(500).json({ ok: false, message: "Server error" });
+  }
+});
+
 export default router;
+

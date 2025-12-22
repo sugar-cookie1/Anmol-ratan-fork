@@ -32,15 +32,9 @@ export async function createOrUpdateUser({ uid, phoneNumber, username }) {
     return user;
   }
 
-  user = new User({
-    username: username || phoneNumber,
-    phoneNumber,
-    firebaseUid: uid,
-    isAllowed: true, // Auto-whitelist (change if needed)
-  });
-
-  await user.save();
-  return user;
+  // STRICT WHITELIST: Do NOT create user if not found.
+  // User must be added by admin first.
+  return null;
 }
 
 export async function isUserAllowed(phoneNumber) {

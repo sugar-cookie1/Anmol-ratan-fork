@@ -15,9 +15,7 @@ import Dashboard from "./components/dashboard";
 import AdminActivityPage from "./components/admin-activity-page";
 
 type UserDetails = {
-  firstName: string;
-  lastName: string;
-  place: string;
+  name: string;
 } | null;
 
 interface ProtectedRouteProps {
@@ -82,9 +80,7 @@ function AppRoutes() {
   };
 
   const handleCompleteDetails = (details: {
-    firstName: string;
-    lastName: string;
-    place: string;
+    name: string;
   }) => {
     setUserDetails(details);
     localStorage.setItem("userDetails", JSON.stringify(details));

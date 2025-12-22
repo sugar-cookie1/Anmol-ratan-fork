@@ -141,3 +141,17 @@ export async function addAdminBhajan(
     return { ok: false, message: "Server connection error" };
   }
 }
+
+export async function verifyAdminPassword(password: string): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const res = await fetch(`${API}/admin/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("verifyAdminPassword error:", err);
+    return { ok: false, message: "Server connection error" };
+  }
+}

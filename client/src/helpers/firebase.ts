@@ -57,7 +57,7 @@ export const initRecaptcha = (containerId: string): RecaptchaVerifier => {
     auth,
     containerId,
     {
-      size: "normal", // or "normal" if you want the widget visible
+      size: "invisible", // or "normal" if you want the widget visible
       callback: (response: unknown) => {
         console.log("DEBUG: reCAPTCHA solved", response);
       },

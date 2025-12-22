@@ -15,7 +15,7 @@ const userSchema = new Schema(
     },
     isAllowed: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   },
   { timestamps: true }

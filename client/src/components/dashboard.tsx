@@ -7,7 +7,7 @@ import { Music, Mic, User } from "lucide-react"
 interface DashboardProps {
   phoneNumber: string
   isGuest: boolean
-  userDetails?: { firstName: string; lastName: string; place: string }
+  userDetails?: { name: string }
   onLogout: () => void
 }
 
@@ -26,7 +26,7 @@ export default function Dashboard({ phoneNumber, isGuest, userDetails, onLogout 
     <div className="min-h-screen bg-orange-50 flex flex-col">
       {/* Main Content */}
       <div className="flex-1 overflow-auto pb-20">
-        {activeTab === "bhajans" && <BhajansTab userName={userDetails?.firstName} />}
+        {activeTab === "bhajans" && <BhajansTab userName={userDetails?.name} />}
         {activeTab === "recordings" && <RecordingsTab />}
         {activeTab === "profile" && (
           <ProfileTab

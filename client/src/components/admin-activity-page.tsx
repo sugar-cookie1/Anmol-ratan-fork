@@ -3,9 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
-import { addAdminUser, addAdminBhajan } from "../api/api";
-
-const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET;
+import { addAdminUser, addAdminBhajan, verifyAdminPassword } from "../api/api";
 
 
 export default function AdminActivityPage() {
@@ -13,6 +11,7 @@ export default function AdminActivityPage() {
     const [password, setPassword] = useState("")
     const [activeTab, setActiveTab] = useState<"user" | "bhajan">("user")
     const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null)
+    const [loading, setLoading] = useState(false)
 
     // User Form State
     const [username, setUsername] = useState("")
@@ -23,12 +22,27 @@ export default function AdminActivityPage() {
     const [category, setCategory] = useState("Bhajan")
     const [lyrics, setLyrics] = useState("")
 
-    const handleLogin = () => {
-        if (password === ADMIN_SECRET) {
-            setIsAuthenticated(true)
-            setMessage(null)
-        } else {
-            setMessage({ text: "Invalid password", type: "error" })
+    const handleLogin = async () => {
+        if (!password) {
+            setMessage({ text: "Please enter password", type: "error" })
+            return
+        }
+
+        setLoading(true)
+        setMessage(null)
+
+        try {
+            const res = await verifyAdminPassword(password)
+            if (res.ok) {
+                setIsAuthenticated(true)
+                setMessage(null)
+            } else {
+                setMessage({ text: res.message || "Invalid password", type: "error" })
+            }
+        } catch (err) {
+            setMessage({ text: "Verification failed", type: "error" })
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -84,8 +98,12 @@ export default function AdminActivityPage() {
                             {message.text}
                         </p>
                     )}
-                    <Button onClick={handleLogin} className="w-full bg-orange-600 hover:bg-orange-700">
-                        Enter
+                    <Button
+                        onClick={handleLogin}
+                        className="w-full bg-orange-600 hover:bg-orange-700"
+                        disabled={loading}
+                    >
+                        {loading ? "Verifying..." : "Enter"}
                     </Button>
                 </div>
             </div>
