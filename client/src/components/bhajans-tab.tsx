@@ -39,7 +39,19 @@ export default function BhajansTab({ userName }: BhajansTabProps) {
       title: "जिंदाराम",
       subtitle: "Jindaram",
       gradient: "from-yellow-400 to-orange-500",
-      filterValue: "Jindaram" // Assuming this matches DB value
+      filterValue: "Jindaram"
+    },
+    {
+      title: "भजन",
+      subtitle: "Bhajan",
+      gradient: "from-pink-400 to-rose-500",
+      filterValue: "Bhajan"
+    },
+    {
+      title: "सभी",
+      subtitle: "All",
+      gradient: "from-blue-400 to-indigo-500",
+      filterValue: "All"
     },
   ]
 
@@ -49,13 +61,22 @@ export default function BhajansTab({ userName }: BhajansTabProps) {
 
   // Filter Logic
   const filteredBhajans = bhajans.filter((b) => {
-    const matchesCategory = selectedCategory ? b.category.toLowerCase().includes(selectedCategory.toLowerCase()) : true
     const matchesSearch = searchQuery
       ? b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.lyrics.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (b.titleEn && b.titleEn.toLowerCase().includes(searchQuery.toLowerCase()))
       : true
-    return matchesCategory && matchesSearch
+
+    // If searching, show all matches regardless of category
+    if (searchQuery) return matchesSearch
+
+    // If no search, use category filter
+    if (selectedCategory && selectedCategory !== "All") {
+      return b.category.toLowerCase().includes(selectedCategory.toLowerCase())
+    }
+
+    // Default (No search, no specific category or "All" selected) -> Show All
+    return true
   })
 
   if (selectedBhajan) {
