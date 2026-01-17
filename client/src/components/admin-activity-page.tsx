@@ -1,15 +1,16 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-import { addAdminUser, addAdminBhajan, verifyAdminPassword } from "../api/api";
+import { addAdminUser, addAdminBhajan, verifyAdminPassword, getAdminUsers } from "../api/api";
 
 
 export default function AdminActivityPage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [password, setPassword] = useState("")
-    const [activeTab, setActiveTab] = useState<"user" | "bhajan">("user")
+    const [activeTab, setActiveTab] = useState<"user" | "bhajan" | "view-users">("user")
     const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null)
     const [loading, setLoading] = useState(false)
 
@@ -22,6 +23,10 @@ export default function AdminActivityPage() {
     const [titleEn, setTitleEn] = useState("")
     const [category, setCategory] = useState("Bhajan")
     const [lyrics, setLyrics] = useState("")
+
+    // Users List State
+    const [usersList, setUsersList] = useState<any[]>([])
+    const [loadingUsers, setLoadingUsers] = useState(false)
 
     const handleLogin = async () => {
         if (!password) {
@@ -83,6 +88,28 @@ export default function AdminActivityPage() {
         }
     }
 
+    const fetchUsers = async () => {
+        setLoadingUsers(true)
+        try {
+            const res = await getAdminUsers(password)
+            if (res.ok && res.data) {
+                setUsersList(res.data)
+            } else {
+                setMessage({ text: "Failed to fetch users", type: "error" })
+            }
+        } catch (err) {
+            setMessage({ text: "Error fetching users", type: "error" })
+        } finally {
+            setLoadingUsers(false)
+        }
+    }
+
+    useEffect(() => {
+        if (isAuthenticated && activeTab === "view-users") {
+            fetchUsers()
+        }
+    }, [activeTab, isAuthenticated])
+
     if (!isAuthenticated) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -121,18 +148,24 @@ export default function AdminActivityPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-4 mb-8 border-b">
+                <div className="flex gap-4 mb-8 border-b overflow-x-auto">
                     <button
-                        className={`pb-2 px-4 font-medium ${activeTab === "user" ? "border-b-2 border-orange-500 text-orange-600" : "text-gray-500"}`}
+                        className={`pb-2 px-4 font-medium whitespace-nowrap ${activeTab === "user" ? "border-b-2 border-orange-500 text-orange-600" : "text-gray-500"}`}
                         onClick={() => { setActiveTab("user"); setMessage(null); }}
                     >
                         Add User
                     </button>
                     <button
-                        className={`pb-2 px-4 font-medium ${activeTab === "bhajan" ? "border-b-2 border-orange-500 text-orange-600" : "text-gray-500"}`}
+                        className={`pb-2 px-4 font-medium whitespace-nowrap ${activeTab === "bhajan" ? "border-b-2 border-orange-500 text-orange-600" : "text-gray-500"}`}
                         onClick={() => { setActiveTab("bhajan"); setMessage(null); }}
                     >
                         Add Bhajan
+                    </button>
+                    <button
+                        className={`pb-2 px-4 font-medium whitespace-nowrap ${activeTab === "view-users" ? "border-b-2 border-orange-500 text-orange-600" : "text-gray-500"}`}
+                        onClick={() => { setActiveTab("view-users"); setMessage(null); }}
+                    >
+                        View Users
                     </button>
                 </div>
 
@@ -214,6 +247,47 @@ export default function AdminActivityPage() {
                             Add Bhajan
                         </Button>
                     </form>
+                )}
+
+                {/* View Users Tab */}
+                {activeTab === "view-users" && (
+                    <div>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-semibold text-gray-800">Whitelisted Users</h2>
+                            <Button variant="outline" size="sm" onClick={fetchUsers} disabled={loadingUsers}>
+                                {loadingUsers ? "Refreshing..." : "Refresh"}
+                            </Button>
+                        </div>
+
+                        {loadingUsers ? (
+                            <div className="text-center py-8">Loading...</div>
+                        ) : usersList.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">No users found</div>
+                        ) : (
+                            <div className="border rounded-lg overflow-hidden">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Username</TableHead>
+                                            <TableHead>Phone Number</TableHead>
+                                            <TableHead className="text-right">Added</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {usersList.map((user) => (
+                                            <TableRow key={user._id}>
+                                                <TableCell className="font-medium">{user.username}</TableCell>
+                                                <TableCell>{user.phoneNumber}</TableCell>
+                                                <TableCell className="text-right text-xs text-gray-500">
+                                                    {new Date(user.createdAt).toLocaleDateString()}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
         </div>

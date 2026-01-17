@@ -144,6 +144,20 @@ export async function addAdminBhajan(
   }
 }
 
+export async function getAdminUsers(secret: string): Promise<{ ok: boolean; data?: any[]; message?: string }> {
+  try {
+    const res = await fetch(`${API}/admin/users`, {
+      headers: {
+        "x-admin-secret": secret,
+      },
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("getAdminUsers error:", err);
+    return { ok: false, message: "Server connection error" };
+  }
+}
+
 export async function editAdminBhajan(
   id: string,
   data: Partial<Bhajan>,

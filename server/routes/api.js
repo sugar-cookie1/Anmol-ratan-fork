@@ -173,6 +173,22 @@ router.post("/admin/users", async (req, res) => {
   }
 });
 
+// ---------------- ADMIN: GET WHITELISTED USERS ----------------
+router.get("/admin/users", async (req, res) => {
+  try {
+    const receivedHeader = req.headers["x-admin-secret"];
+    if (!process.env.ADMIN_SECRET || receivedHeader !== process.env.ADMIN_SECRET) {
+      return res.status(403).json({ ok: false, message: "Unauthorized" });
+    }
+
+    const users = await User.find({ isAllowed: true }).sort({ createdAt: -1 });
+    return res.json({ ok: true, data: users });
+  } catch (err) {
+    console.error("GET /admin/users error:", err);
+    return res.status(500).json({ ok: false, message: "Server error" });
+  }
+});
+
 
 // ---------------- ADMIN: VERIFY PASSWORD ----------------
 router.post("/admin/verify", (req, res) => {

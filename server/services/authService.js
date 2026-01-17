@@ -3,6 +3,7 @@
 // server/services/authService.js
 import admin from "../config/firebase-admin-config.js";
 import { User } from "#models/user.js";
+import { normalizePhone } from "./userService.js";
 
 export const adminAuth = admin.auth();
 
@@ -18,11 +19,13 @@ export async function verifyIdToken(idToken) {
    USER HELPERS
 ----------------------------------------------------------- */
 export async function findUserByPhone(phoneNumber) {
-  return User.findOne({ phoneNumber }).select("-__v");
+  const phone = normalizePhone(phoneNumber);
+  return User.findOne({ phoneNumber: phone }).select("-__v");
 }
 
 export async function createOrUpdateUser({ uid, phoneNumber, username }) {
-  let user = await User.findOne({ phoneNumber });
+  const phone = normalizePhone(phoneNumber);
+  let user = await User.findOne({ phoneNumber: phone });
 
   if (user) {
     if (!user.firebaseUid && uid) {
@@ -38,7 +41,8 @@ export async function createOrUpdateUser({ uid, phoneNumber, username }) {
 }
 
 export async function isUserAllowed(phoneNumber) {
-  const user = await User.findOne({ phoneNumber });
+  const phone = normalizePhone(phoneNumber);
+  const user = await User.findOne({ phoneNumber: phone });
   return user ? !!user.isAllowed : false;
 }
 

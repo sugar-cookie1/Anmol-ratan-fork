@@ -4,7 +4,7 @@ import { User } from "#models/user.js";
 /**
  * Basic phone normalization — tweak if you need international rules.
  */
-function normalizePhone(phone) {
+export function normalizePhone(phone) {
   if (!phone) return phone;
   let s = String(phone).trim();
   // Strip +91 or just + so we match the "raw" number in DB
