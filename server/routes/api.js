@@ -31,13 +31,14 @@ router.post("/admin/bhajans", async (req, res) => {
       return res.status(403).json({ ok: false, message: "Unauthorized" });
     }
 
-    const { title, lyrics, category } = req.body;
+    const { title, titleEn, lyrics, category } = req.body;
     if (!title || !lyrics) {
       return res.status(400).json({ ok: false, message: "Title and lyrics are required" });
     }
 
     const newBhajan = new Bhajan({
       title,
+      titleEn,
       lyrics,
       category: category || "General",
     });
@@ -46,6 +47,35 @@ router.post("/admin/bhajans", async (req, res) => {
     return res.json({ ok: true, message: "Bhajan added successfully", data: newBhajan });
   } catch (err) {
     console.error("POST /admin/bhajans error:", err);
+    return res.status(500).json({ ok: false, message: "Server error" });
+  }
+});
+
+// ---------------- ADMIN: EDIT BHAJAN ----------------
+router.put("/admin/bhajans/:id", async (req, res) => {
+  try {
+    const receivedHeader = req.headers["x-admin-secret"];
+    if (!process.env.ADMIN_SECRET || receivedHeader !== process.env.ADMIN_SECRET) {
+      return res.status(403).json({ ok: false, message: "Unauthorized" });
+    }
+
+    const { id } = req.params;
+    const { title, titleEn, lyrics, category } = req.body;
+
+    const bhajan = await Bhajan.findById(id);
+    if (!bhajan) {
+      return res.status(404).json({ ok: false, message: "Bhajan not found" });
+    }
+
+    if (title) bhajan.title = title;
+    if (titleEn !== undefined) bhajan.titleEn = titleEn; // Allow clearing if empty string passed? Or just updating.
+    if (lyrics) bhajan.lyrics = lyrics;
+    if (category) bhajan.category = category;
+
+    await bhajan.save();
+    return res.json({ ok: true, message: "Bhajan updated successfully", data: bhajan });
+  } catch (err) {
+    console.error("PUT /admin/bhajans/:id error:", err);
     return res.status(500).json({ ok: false, message: "Server error" });
   }
 });
@@ -98,7 +128,6 @@ router.get("/user/me", verifyFirebaseIdToken, async (req, res) => {
 });
 
 
-// ---------------- ADMIN: ADD / WHITELIST USER ----------------
 // ---------------- ADMIN: ADD / WHITELIST USER ----------------
 router.post("/admin/users", async (req, res) => {
   try {

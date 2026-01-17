@@ -80,6 +80,7 @@ export async function loginWithIdToken(
 export interface Bhajan {
   _id: string;
   title: string;
+  titleEn?: string;
   lyrics: string;
   category: string;
   createdAt: string;
@@ -122,6 +123,7 @@ export async function addAdminUser(
 
 export async function addAdminBhajan(
   title: string,
+  titleEn: string,
   category: string,
   lyrics: string,
   secret: string
@@ -133,11 +135,32 @@ export async function addAdminBhajan(
         "Content-Type": "application/json",
         "x-admin-secret": secret,
       },
-      body: JSON.stringify({ title, category, lyrics }),
+      body: JSON.stringify({ title, titleEn, category, lyrics }),
     });
     return await res.json();
   } catch (err) {
     console.error("addAdminBhajan error:", err);
+    return { ok: false, message: "Server connection error" };
+  }
+}
+
+export async function editAdminBhajan(
+  id: string,
+  data: Partial<Bhajan>,
+  secret: string
+): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const res = await fetch(`${API}/admin/bhajans/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-secret": secret,
+      },
+      body: JSON.stringify(data),
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("editAdminBhajan error:", err);
     return { ok: false, message: "Server connection error" };
   }
 }

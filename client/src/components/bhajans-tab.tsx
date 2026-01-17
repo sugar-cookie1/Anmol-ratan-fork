@@ -51,7 +51,9 @@ export default function BhajansTab({ userName }: BhajansTabProps) {
   const filteredBhajans = bhajans.filter((b) => {
     const matchesCategory = selectedCategory ? b.category.toLowerCase().includes(selectedCategory.toLowerCase()) : true
     const matchesSearch = searchQuery
-      ? b.title.toLowerCase().includes(searchQuery.toLowerCase()) || b.lyrics.toLowerCase().includes(searchQuery.toLowerCase())
+      ? b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.lyrics.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (b.titleEn && b.titleEn.toLowerCase().includes(searchQuery.toLowerCase()))
       : true
     return matchesCategory && matchesSearch
   })
@@ -137,28 +139,30 @@ export default function BhajansTab({ userName }: BhajansTabProps) {
                 className="bg-white rounded-2xl p-4 shadow-sm border border-orange-100 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => handleBhajanClick(bhajan)}
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
                     <Music2 className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-xs text-orange-600 font-medium">
+                  <span className="text-sm text-orange-600 font-bold">
                     {bhajan.category}
                   </span>
                 </div>
                 <h3
-                  className="font-bold text-gray-800 mb-1 text-sm"
+                  className="font-bold text-gray-900 text-lg mb-0.5 leading-tight"
                   style={{ fontFamily: "serif" }}
                 >
                   {bhajan.title}
                 </h3>
-                <p className="text-xs text-gray-600 line-clamp-2">
-                  {bhajan.lyrics.substring(0, 60)}...
-                </p>
+                {bhajan.titleEn && (
+                  <p className="text-sm text-gray-500 font-normal mb-1">
+                    {bhajan.titleEn}
+                  </p>
+                )}
               </div>
             ))}
             {filteredBhajans.length === 0 && (
               <div className="col-span-2 text-center py-10 text-gray-500">
-                No bhajans found found.
+                No bhajans found.
               </div>
             )}
           </div>

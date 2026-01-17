@@ -19,6 +19,7 @@ export default function AdminActivityPage() {
 
     // Bhajan Form State
     const [title, setTitle] = useState("")
+    const [titleEn, setTitleEn] = useState("")
     const [category, setCategory] = useState("Bhajan")
     const [lyrics, setLyrics] = useState("")
 
@@ -66,11 +67,12 @@ export default function AdminActivityPage() {
     const handleAddBhajan = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            const res = await addAdminBhajan(title, category, lyrics, password);
+            const res = await addAdminBhajan(title, titleEn, category, lyrics, password);
 
             if (res.ok) {
                 setMessage({ text: "Bhajan added successfully!", type: "success" })
                 setTitle("")
+                setTitleEn("")
                 setLyrics("")
                 setCategory("Bhajan")
             } else {
@@ -173,12 +175,20 @@ export default function AdminActivityPage() {
                 {activeTab === "bhajan" && (
                     <form onSubmit={handleAddBhajan} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Title (Hindi)</label>
                             <Input
-                                placeholder="Bhajan Title"
+                                placeholder="e.g. हनुमान चालीसा"
                                 value={title}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
                                 required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Title (English)</label>
+                            <Input
+                                placeholder="e.g. Hanuman Chalisa"
+                                value={titleEn}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitleEn(e.target.value)}
                             />
                         </div>
                         <div>

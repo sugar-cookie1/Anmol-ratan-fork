@@ -26,10 +26,15 @@ export default function BhajanDetail({ bhajan, onBack }: BhajanDetailProps) {
           </Button>
 
           <div className="flex-1">
-            <h1 className="text-xl font-bold" style={{ fontFamily: "serif" }}>
+            <h1 className="text-xl font-bold leading-tight" style={{ fontFamily: "serif" }}>
               {bhajan.title}
             </h1>
-            <p className="text-orange-100 text-sm">{bhajan.category}</p>
+            {bhajan.titleEn && (
+              <p className="text-white/80 text-sm font-normal">
+                {bhajan.titleEn}
+              </p>
+            )}
+            <p className="text-orange-100 text-xs mt-1">{bhajan.category}</p>
           </div>
         </div>
 
