@@ -49,7 +49,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     <div className="min-h-screen bg-gradient-to-b from-orange-100 to-cream-50 relative overflow-hidden">
 
       {/* Background image */}
-      <div className="absolute inset-0 opacity-10">
+      <div className="absolute inset-0 opacity-30">
         <img
           src="/spiritual-bg.png"
           alt="Spiritual background"
@@ -65,10 +65,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
         {/* Logo */}
         <div className="text-center mb-16">
-          <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg">
-            <span className="text-white text-2xl font-bold">🕉️</span>
-          </div>
-          <h1 className="text-3xl font-bold text-orange-800 mb-2">भजन संग्रह</h1>
+          <h1 className="text-3xl font-bold text-orange-800 mb-2">अनमोल रतन</h1>
           <p className="text-orange-600 text-lg">Bhajan Sangrah</p>
         </div>
 
