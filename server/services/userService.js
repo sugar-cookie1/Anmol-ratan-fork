@@ -6,7 +6,7 @@ import { User } from "#models/user.js";
  */
 export function normalizePhone(phone) {
   if (!phone) return phone;
-  let s = String(phone).trim();
+  let s = String(phone).replace(/\s/g, "");
   // Strip +91 or just + so we match the "raw" number in DB
   if (s.startsWith("+91")) s = s.slice(3);
   else if (s.startsWith("+")) s = s.slice(1);

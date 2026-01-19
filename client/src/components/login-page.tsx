@@ -87,7 +87,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                 type="tel"
                 placeholder="Enter mobile number"
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                onChange={(e) => setPhoneNumber(e.target.value.replace(/\s/g, ''))}
                 className="pl-12 h-14 text-lg bg-white/80 backdrop-blur-sm border-orange-200 rounded-2xl focus:border-orange-400 focus:ring-orange-400"
               />
             </div>

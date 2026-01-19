@@ -193,7 +193,7 @@ export default function AdminActivityPage() {
                             <Input
                                 placeholder="e.g. 1234567890 (No +91)"
                                 value={userPhone}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserPhone(e.target.value)}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserPhone(e.target.value.replace(/\s/g, ''))}
                                 required
                             />
                             <p className="text-xs text-gray-500 mt-1">Enter exact number as stored in user's device (usually without +91)</p>
